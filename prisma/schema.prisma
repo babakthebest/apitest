@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  name         String?
+  isAdmin      Boolean
+  posts        Post[]
+  favoritposts favoritposts[]
+
+  @@index([email])
+}
+
+model Post {
+  id           String         @id @default(uuid())
+  title        String
+  content      String?
+  published    Boolean        @default(false)
+  Author       User           @relation(fields: [userId], references: [id])
+  userId       String
+  category     category       @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  favoritposts favoritposts[]
+}
+
+model favoritposts {
+  code   String @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  userId String
+  posts  Post   @relation(fields: [postId], references: [id], onUpdate: NoAction)
+  postId String
+
+  @@id([userId, postId])
+  @@index([code])
+}
+
+model category {
+  id   String @id @default(uuid())
+  name String
+  Post Post[]
+}
